@@ -1,0 +1,24 @@
+/код дл€ автоматического перевода времени в очки
+
+Function TimeToSeconds(timeValue As Range) As Double
+    Dim totalSeconds As Double
+    Dim minutes As Double
+    Dim seconds As Double
+    Dim milliseconds As Double
+
+    ' ѕровер€ем, €вл€етс€ ли значение допустимым временем
+    If IsNumeric(timeValue.Value) Then
+        ' »звлекаем минуты и секунды
+        minutes = Minute(timeValue.Value)
+        seconds = Second(timeValue.Value)
+
+        ' »звлекаем доли секунд
+        milliseconds = (timeValue.Value - Int(timeValue.Value)) * 24 * 60 * 60  ' ѕреобразуем остаток времени в миллисекунды
+        
+        ' ¬озвращаем результат
+        TimeToSeconds = milliseconds
+    Else
+        TimeToSeconds = CVErr(xlErrValue)
+    End If
+End Function
+
