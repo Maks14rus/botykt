@@ -1,12 +1,12 @@
-import sqlite3
+import os
 from telegram import Update
 from telegram.ext import (
     Application, CommandHandler, MessageHandler, filters, ConversationHandler, ContextTypes
 )
 
-API_TOKEN = "7450040241:AAElyFB_Z7jdKKF-kV823ue7su8xdXvNCHY"
-ADMIN_IDS = [895836779,1723953206]  # Ваши Telegram ID (замените на свои)
-#
+API_TOKEN = "7450040241:AAElyFB_Z7jdKKF-kV823ue7su8xdXvNCHY"  # Токен вашего бота
+ADMIN_IDS = [895836779, 1723953206]  # Telegram ID администраторов
+
 # Шаги для обработки данных
 NAME, BRAND_MODEL, VIN, DETAILS, PHOTO, PHONE = range(6)
 
@@ -31,7 +31,11 @@ async def brand_model_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
 # Функция для получения VIN номера автомобиля
 async def vin_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data['vin'] = update.message.text
-    await update.message.reply_text("Расскажите нам историю вашего железного коня: с какого года ваша ласточка бороздит просторы света, сколько лошадок скрывается под капотом, сколько  верст  прошла ваша железная леди и какую сумму вы мечтаете выручить за эту красавицу.(Отправьте подробную информацию о машине).")
+    await update.message.reply_text(
+        "Расскажите нам историю вашего железного коня: с какого года ваша ласточка бороздит просторы света, сколько "
+        "лошадок скрывается под капотом, сколько верст прошла ваша железная леди и какую сумму вы мечтаете выручить "
+        "за эту красавицу.(Отправьте подробную информацию о машине)."
+    )
     return DETAILS
 
 # Функция для получения деталей авто
@@ -49,7 +53,10 @@ async def photo_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
         for admin_id in ADMIN_IDS:
             await context.bot.send_photo(chat_id=admin_id, photo=photo.file_id)
 
-    await update.message.reply_text("Вау, что за бричка. Последний штрих-оставьте свой номер телефона для того, чтобы мы могли оперативно связаться с вами и договориться обо всем остальном.")
+    await update.message.reply_text(
+        "Вау, что за бричка. Последний штрих-оставьте свой номер телефона для того, чтобы мы могли оперативно связаться "
+        "с вами и договориться обо всем остальном."
+    )
     return PHONE
 
 # Функция для получения номера телефона пользователя
@@ -69,7 +76,10 @@ async def phone_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     for admin_id in ADMIN_IDS:
         await context.bot.send_message(chat_id=admin_id, text=car_info)
 
-    await update.message.reply_text("Благодарю! Ваш автомобиль-настоящая жемчужина на автомобильном рынке, и мы сделаем все возможное чтобы найти ему достойное ожерелье владельца!!")
+    await update.message.reply_text(
+        "Благодарю! Ваш автомобиль-настоящая жемчужина на автомобильном рынке, и мы сделаем все возможное чтобы найти "
+        "ему достойное ожерелье владельца!!"
+    )
     return ConversationHandler.END
 
 # Функция для отмены диалога
@@ -96,7 +106,15 @@ def main():
     )
 
     application.add_handler(conv_handler)
-    application.run_polling()
+
+    # Настраиваем Webhook для работы на Render
+    port = int(os.environ.get("PORT", 5000))
+    application.run_webhook(
+        listen="0.0.0.0",
+        port=port,
+        url_path=API_TOKEN,
+        webhook_url=f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/{API_TOKEN}",
+    )
 
 if __name__ == "__main__":
     main()
